@@ -56,21 +56,47 @@ void CvoltonOptionsLayer::onToggle(cocos2d::CCObject* sender)
     auto button = static_cast<CCMenuItemSpriteExtra*>(sender);
     auto CM = CvoltonManager::sharedState();
     CM->toggleOption(static_cast<CCString*>(button->getUserData())->getCString());
+    //if (CvoltonManager::sharedState()->getOption("cool_toggle"))
+    //{
+    //    exit(0);
+    //}
 
     destroyToggles();
     drawToggles();
     sender->release();
 }
+void CvoltonOptionsLayer::onInfo(cocos2d::CCObject* sender)
+{
+        auto amogus = static_cast<CCMenuItemSpriteExtra*>(sender);
+        auto text = static_cast<CCLabelBMFont*>(amogus->getChildren()->objectAtIndex(1));
+        auto texttext = text->getString();
+        auto text2 = static_cast<CCLabelBMFont*>(amogus->getChildren()->objectAtIndex(2));
+        auto texttext2 = text2->getString();
+        std::ostringstream optionInfo;
+        optionInfo << "<cy>" << texttext2 << "</c>" << "\n\n" << texttext;
+        FLAlertLayer::create(nullptr, "Help", "OK", nullptr, optionInfo.str())->show();
 
-void CvoltonOptionsLayer::createToggle(const char* option, const char* name){
+}
+
+void CvoltonOptionsLayer::createToggle(const char* option, const char* name, const char* desc, bool active) {
     auto CM = CvoltonManager::sharedState();
 
     auto buttonSprite = CCSprite::createWithSpriteFrameName(CM->getOption(option) ? "GJ_checkOn_001.png" : "GJ_checkOff_001.png");
     buttonSprite->setScale(0.8f);
+    auto amog = menu_selector(CvoltonOptionsLayer::onToggle);
+    if (active)
+    {
+        auto amog = menu_selector(CvoltonOptionsLayer::onToggle);
+    }
+    else
+    {
+        amog = nullptr;
+        buttonSprite->setColor({ 200,200,200 });
+    }
     auto button = gd::CCMenuItemSpriteExtra::create(
         buttonSprite,
         this,
-        menu_selector(CvoltonOptionsLayer::onToggle)
+        amog
     );
     m_pButtonMenu->addChild(button);
     float y = 45.f - (toggleCount++ * 40.f);
@@ -79,7 +105,25 @@ void CvoltonOptionsLayer::createToggle(const char* option, const char* name){
     optionString->retain();
     button->setUserData(optionString);
     button->setSizeMult(1.2f);
-
+    if (desc)
+    {
+        
+        auto spriter = CCSprite::createWithSpriteFrameName("GJ_infoIcon_001.png");
+        auto infosprite = CCMenuItemSpriteExtra::create(
+            spriter,
+            this,
+            menu_selector(CvoltonOptionsLayer::onInfo)
+        );
+        infosprite->setPosition({ button->getPositionX()-15,button->getPositionY()+20 });
+        spriter->setScale(0.5f);
+        m_pButtonMenu->addChild(infosprite);
+        auto desctext = CCLabelBMFont::create(desc, "chatFont.fnt");
+        auto desctext2 = CCLabelBMFont::create(name, "chatFont.fnt");
+        desctext->setVisible(false);
+        desctext2->setVisible(false);
+        infosprite->addChild(desctext);
+        infosprite->addChild(desctext2);
+    }
     auto label = createTextLabel(name, {-107, y}, 0.5f, m_pButtonMenu);
     label->setAnchorPoint({0,0.5f});
 }
@@ -94,6 +138,7 @@ void CvoltonOptionsLayer::createButtonToggle(const char* option, CCNode* sprite,
         this,
         menu_selector(CvoltonOptionsLayer::onToggle)
     );
+    
     m_pButtonMenu->addChild(button);
     button->setPosition({x, y});
     if(!CM->getOption(option)) button->setColor({125,125,125});
@@ -118,8 +163,10 @@ void CvoltonOptionsLayer::destroyToggles(){
 }
 
 void CvoltonOptionsLayer::drawToggles(){
-    //createToggle("no_update_check", "Disable Update Check");
-    createToggle("no_green_user", "Disable Green Username Fix");
-    createToggle("no_level_info", "Disable Extended Level Info");
-    createToggle("white_id", "White Level ID text");
+    //createToggle("no_update_check", "Disable Update Check (disabled)","<cr>Disables</c> the update check.\n This feature is <cr>deprecated</c> in favor of <cy>auto</c><cj>-</c><cb>update</c>.",false);
+    createToggle("no_green_user", "Disable Green Username Fix","<cr>Disables</c> the <cg>green</c> username fix.\nYou can turn this <cr>OFF</c> if you want to.",true);
+    createToggle("no_level_info", "Disable Extended Level Info", nullptr,true);
+    createToggle("white_id", "White Level ID text", "Makes <cy>level IDs</c> white on <cj>Level Cells</c>",true);
+    //createToggle("cool_toggle", "Cool Toggle", "Be <cr>careful</c> who you <cy>trust</c> there might be an <cd>impostor</c> <cr>among us</c>", true);
+    
 }
